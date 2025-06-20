@@ -206,8 +206,15 @@ class TestActionTransmitMQTTData : public TestAction {
         const auto& data(message_.into<AstarteDatastreamObject>());
         device_->send_object(message_.get_interface(), message_.get_path(), data, timestamp_.get());
       }
-    } else {
-      // TODO: Handle properties
+    } else {  // handle properties
+      const auto& data(message_.into<AstartePropertyIndividual>());
+
+      if (data.get_value().has_value()) {
+        device_->set_property(message_.get_interface(), message_.get_path(),
+                              data.get_value().value());
+      } else {  // Unsetting property
+        device_->unset_property(message_.get_interface(), message_.get_path());
+      }
     }
   }
 
@@ -308,7 +315,7 @@ class TestActionFetchRESTData : public TestAction {
   void execute(const std::string& case_name) const override {
     spdlog::info("[{}] Fetching REST data...", case_name);
     std::string request_url = appengine_url_ + "/v1/" + realm_ + "/devices/" + device_id_ +
-                              "/interfaces/" + message_.get_interface();
+                              "/interfaces/" + message_.get_interface() + "/sensor1";
     spdlog::debug("HTTP GET: {}", request_url);
     cpr::Response get_response =
         cpr::Get(cpr::Url{request_url}, cpr::Header{{"Content-Type", "application/json"}},
@@ -369,6 +376,17 @@ class TestActionFetchRESTData : public TestAction {
       }
     } else {
       // TODO: Parse properties
+      const auto& expected_data(message_.into<AstartePropertyIndividual>());
+      json expected_data_json = json::parse(expected_data.format());
+      spdlog::error("Expected data: {}", expected_data_json.dump());
+
+      spdlog::info("RESPONSE JSON: {}", response_json[message_.get_path()].dump());
+      json fetched_data = response_json[message_.get_path()]["value"];
+      spdlog::error("Fetched data: {}", fetched_data.dump());
+
+      if (expected_data_json != fetched_data) {
+        throw EndToEndMismatchException("Fetched REST API data differs from expected data.");
+      }
     }
   }
 
