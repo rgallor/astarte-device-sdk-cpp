@@ -10,6 +10,7 @@
 
 #include "astarte_device_sdk/data.hpp"
 #include "astarte_device_sdk/device_grpc.hpp"
+#include "astarte_device_sdk/formatter.hpp"
 #include "astarte_device_sdk/msg.hpp"
 
 using AstarteDeviceSdk::AstarteData;
