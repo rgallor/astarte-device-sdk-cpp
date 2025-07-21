@@ -14,11 +14,10 @@
 #define NS_FORMAT std
 #else                        // (__cplusplus >= 202002L) && (__has_include(<format>))
 #include <spdlog/fmt/fmt.h>  // NOLINT: avoid clang-tidy warning regarding fmt library not used directly
-#define NS_FORMAT fmt
-#if defined(ASTARTE_FORMAT_ENABLED)
+
 #include <iomanip>
 #include <sstream>
-#endif
+#define NS_FORMAT fmt
 #endif  // (__cplusplus >= 202002L) && (__has_include(<format>))
 
 #include "astarte_device_sdk/individual.hpp"
