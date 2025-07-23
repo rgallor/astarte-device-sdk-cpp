@@ -35,11 +35,6 @@ check_cxx_source_compiles(
     HAS_STD_FORMAT
 )
 
-if(HAS_STD_FORMAT)
-    # C++20 with <format> available to compiler requires to enable the follwoing spdlog feature
-    # TODO: remove once the minimum required C++ standard becomes C++20
-    set(SPDLOG_USE_STD_FORMAT true)
-endif()
 
 message(STATUS "--------------------------------------------------")
 message(STATUS "C++ VERSION: ${CMAKE_CXX_STANDARD}")
@@ -49,16 +44,42 @@ message(STATUS "  ASTARTE_PUBLIC_PROTO_DEP:        ${ASTARTE_PUBLIC_PROTO_DEP}")
 message(STATUS "  ASTARTE_MESSAGE_HUB_PROTO_DIR:   ${ASTARTE_MESSAGE_HUB_PROTO_DIR}")
 message(STATUS "--------------------------------------------------")
 
-# Logging library
-set(SPDLOG_GITHUB_URL https://github.com/gabime/spdlog.git)
-set(SPDLOG_GIT_TAG v1.15.1)
-FetchContent_Declare(
-    spdlog
-    GIT_REPOSITORY ${SPDLOG_GITHUB_URL}
-    GIT_TAG ${SPDLOG_GIT_TAG}
-    SYSTEM
-)
-FetchContent_MakeAvailable(spdlog)
+if(HAS_STD_FORMAT)
+    # C++20 with <format> available to compiler requires to enable the follwoing spdlog feature
+    # TODO: remove once the minimum required C++ standard becomes C++20
+    set(SPDLOG_USE_STD_FORMAT ON)
+    set(SPDLOG_FMT_EXTERNAL OFF)
+
+    set(SPDLOG_GITHUB_URL https://github.com/gabime/spdlog.git)
+    set(SPDLOG_GIT_TAG v1.15.1)
+    FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY ${SPDLOG_GITHUB_URL}
+        GIT_TAG ${SPDLOG_GIT_TAG}
+        SYSTEM
+    )
+    FetchContent_MakeAvailable(spdlog)
+else()
+    # Logging library
+    set(SPDLOG_USE_STD_FORMAT OFF)
+    set(SPDLOG_FMT_EXTERNAL ON)
+
+    set(SPDLOG_GITHUB_URL https://github.com/gabime/spdlog.git)
+    set(SPDLOG_GIT_TAG v1.15.1)
+    FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY ${SPDLOG_GITHUB_URL}
+        GIT_TAG ${SPDLOG_GIT_TAG}
+        SYSTEM
+    )
+    FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG        10.2.1
+    )
+    FetchContent_MakeAvailable(fmt)
+    FetchContent_MakeAvailable(spdlog)
+endif()
 
 # Astarte message hub protos
 if(ASTARTE_MESSAGE_HUB_PROTO_DIR)
@@ -92,10 +113,18 @@ target_link_libraries(astarte_device_sdk
     ${_PROTOBUF_LIBPROTOBUF}
 )
 
-if(ASTARTE_PUBLIC_SPDLOG_DEP)
-    target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+if(HAS_STD_FORMAT)
+    if(ASTARTE_PUBLIC_SPDLOG_DEP)
+        target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+    else()
+        target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+    endif()
 else()
-    target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+    if(ASTARTE_PUBLIC_SPDLOG_DEP)
+        target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
+    else()
+        target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
+    endif()
 endif()
 if(ASTARTE_PUBLIC_PROTO_DEP)
     target_link_libraries(astarte_device_sdk PUBLIC astarte_msghub_proto)
