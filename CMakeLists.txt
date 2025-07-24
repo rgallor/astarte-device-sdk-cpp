@@ -15,7 +15,7 @@ include(FetchContent)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 # Configuration options for this library
 option(ASTARTE_PUBLIC_SPDLOG_DEP "Make spdlog dependency public" OFF)
@@ -60,6 +60,8 @@ if(HAS_STD_FORMAT)
     )
     FetchContent_MakeAvailable(spdlog)
 else()
+    message(STATUS "Before FetchContent, fmt_DIR is: ${fmt_DIR}")
+
     # Logging library
     set(SPDLOG_USE_STD_FORMAT OFF)
     set(SPDLOG_FMT_EXTERNAL ON)
@@ -72,13 +74,21 @@ else()
         GIT_TAG ${SPDLOG_GIT_TAG}
         SYSTEM
     )
+
+    set(FMTLIB_GITHUB_URL https://github.com/fmtlib/fmt.git)
+    set(FMTLIB_GIT_TAG 10.2.1)
     FetchContent_Declare(
         fmt
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_TAG        10.2.1
+        GIT_REPOSITORY ${FMTLIB_GITHUB_URL}
+        GIT_TAG        ${FMTLIB_GIT_TAG}
     )
-    FetchContent_MakeAvailable(fmt)
-    FetchContent_MakeAvailable(spdlog)
+
+    # make fmt available first so spdlog uses the fetched version
+    # FetchContent_MakeAvailable(fmt)
+    # FetchContent_MakeAvailable(spdlog)
+    FetchContent_MakeAvailable(spdlog fmt)
+
+    message(STATUS "After FetchContent, fmt_DIR is: ${fmt_DIR}")
 endif()
 
 # Astarte message hub protos
@@ -113,19 +123,29 @@ target_link_libraries(astarte_device_sdk
     ${_PROTOBUF_LIBPROTOBUF}
 )
 
-if(HAS_STD_FORMAT)
-    if(ASTARTE_PUBLIC_SPDLOG_DEP)
-        target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
-    else()
-        target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
-    endif()
-else()
-    if(ASTARTE_PUBLIC_SPDLOG_DEP)
-        target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
-    else()
-        target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
-    endif()
-endif()
+# if(HAS_STD_FORMAT)
+#     if(ASTARTE_PUBLIC_SPDLOG_DEP)
+#         target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+#     else()
+#         target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+#     endif()
+# else()
+#     if(ASTARTE_PUBLIC_SPDLOG_DEP)
+#         target_link_libraries(astarte_device_sdk PUBLIC spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
+#     else()
+#         target_link_libraries(astarte_device_sdk PRIVATE spdlog::spdlog fmt::fmt $<$<BOOL:${MINGW}>:ws2_32>)
+#     endif()
+# endif()
+target_link_libraries(astarte_device_sdk
+    PUBLIC
+        spdlog::spdlog
+        $<$<NOT:$<BOOL:${HAS_STD_FORMAT}>>:fmt::fmt>
+        $<$<BOOL:${MINGW}>:ws2_32>
+)
+
+get_target_property(inc_dirs astarte_device_sdk INTERFACE_INCLUDE_DIRECTORIES)
+message(STATUS "astarte_device_sdk include dirs: ${inc_dirs}")
+
 if(ASTARTE_PUBLIC_PROTO_DEP)
     target_link_libraries(astarte_device_sdk PUBLIC astarte_msghub_proto)
 else()
