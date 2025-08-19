@@ -100,7 +100,9 @@ fi
 # Define file patterns to format/check
 file_patterns=(
     "src/"*.cpp
+    "src/mqtt/"*.cpp
     "include/astarte_device_sdk/"*.hpp
+    "include/astarte_device_sdk/mqtt/"*.hpp
     "private/"*.hpp
     "samples/"*/*/*.cpp
     "unit/"*.cpp
