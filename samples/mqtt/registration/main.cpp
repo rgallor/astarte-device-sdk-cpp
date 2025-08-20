@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -33,7 +32,7 @@ void from_json(const json& j, Config& c) {
 int main(int argc, char** argv) {
   spdlog::set_level(spdlog::level::debug);
 
-  std::ifstream file("samples/mqtt/config.json");
+  std::ifstream file("samples/mqtt/registration/config.json");
   if (!file.is_open()) {
     spdlog::error("Error: Could not open config.json.");
     return 1;
@@ -41,10 +40,14 @@ int main(int argc, char** argv) {
   json json = json::parse(file);
   auto cfg = json.template get<Config>();
 
-  auto secret =
-      AstarteDeviceSdk::register_device(cfg.pairing_jwt, cfg.pairing_url, cfg.realm, cfg.device_id);
-  if (secret.has_value()) {
-    spdlog::info("credential secret: {}", secret.value());
+  try {
+    auto api = AstarteDeviceSdk::ApiClient(std::move(cfg.realm), std::move(cfg.device_id),
+                                           std::move(cfg.pairing_url));
+
+    auto secret = api.register_device(cfg.pairing_jwt);
+    spdlog::info("credential secret: {}", secret);
+  } catch (const std::exception& e) {
+    spdlog::error("Exception thown: {}", e.what());
   }
 
   return 0;
