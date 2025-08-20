@@ -93,3 +93,14 @@ class JsonAccessErrorException : public ApiClientException {
   explicit JsonAccessErrorException(const std::string& err_message)
       : ApiClientException(err_message) {}
 };
+
+/** @brief Exception thrown when failing to retrieve the Astarte MQTT broker URL. */
+class RetrieveBrokerUrlException : public ApiClientException {
+ public:
+  /**
+   * @brief Constructs the RetrieveBrokerUrlException object.
+   * @param err_message A descriptive error message.
+   */
+  explicit RetrieveBrokerUrlException(const std::string& err_message)
+      : ApiClientException(err_message) {}
+};
