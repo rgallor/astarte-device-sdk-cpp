@@ -8,6 +8,15 @@ SPDX-License-Identifier: Apache-2.0
 
 This sample shows the device registration functionality for the Astarte device library for C++.
 
+## Configuration
+
+The sample is already configured to perform a device registration to an Astarte instance.
+The only thing you need to provide is a valid `config.json` file containing these fields:
+- `pairing_url`, an URL of the Astarte component responsible for device registration
+- `pairing_jwt`, a token necessary to authenticate though Astarte
+- `realm`, the name of the Astarte realm where the device will be registered
+- `device_id`, a 128bit URL encoded base64 string uniquelly identifying a device
+
 ## Building and running
 
 To build this sample run the `build_sample.sh` present in the root of this project with your
