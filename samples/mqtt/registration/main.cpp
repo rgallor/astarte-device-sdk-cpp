@@ -49,6 +49,9 @@ int main(int argc, char** argv) {
 
     auto broker_url = api.get_broker_url(secret);
     spdlog::info("broker url: {}", broker_url);
+
+    auto device_cert = api.get_device_cert(secret);
+    spdlog::info("device certificate: {}", device_cert);
   } catch (const std::exception& e) {
     spdlog::error("Exception thown: {}", e.what());
   }

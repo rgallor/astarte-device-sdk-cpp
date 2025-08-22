@@ -44,6 +44,14 @@ class ApiClient {
    */
   auto get_broker_url(std::string_view credential_secret, int timeout_ms = 0) const -> std::string;
 
+  /**
+   * @brief Retrieve the Astarte device certificate.
+   * @param credential_secret The Astarte device credential necessary to authenticate to the broker.
+   * @param timeout_ms A timeout value to perform the HTTP request.
+   * @return The device certificate.
+   */
+  auto get_device_cert(std::string_view credential_secret, int timeout_ms = 0) const -> std::string;
+
   /** @brief The Astarte realm name. */
   const std::string realm;
   /** @brief The Astarte device id. */
@@ -61,6 +69,12 @@ class ApiClient {
     }
     return std::move(*parsed_url);
   }
+
+  /**
+   * @brief Retrieve the Astarte device CSR
+   * @return The device CSR
+   */
+  auto get_device_csr() const -> std::string;
 };
 
 }  // namespace AstarteDeviceSdk
