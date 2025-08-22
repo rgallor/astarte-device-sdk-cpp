@@ -52,6 +52,9 @@ int main(int argc, char** argv) {
 
     auto device_cert = api.get_device_cert(secret);
     spdlog::info("device certificate: {}", device_cert);
+
+    auto valid_cert = api.device_cert_valid(device_cert, secret);
+    spdlog::info("device certificate is {}valid", valid_cert ? "" : "not ");
   } catch (const std::exception& e) {
     spdlog::error("Exception thown: {}", e.what());
   }

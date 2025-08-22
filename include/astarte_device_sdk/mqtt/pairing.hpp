@@ -52,6 +52,16 @@ class ApiClient {
    */
   auto get_device_cert(std::string_view credential_secret, int timeout_ms = 0) const -> std::string;
 
+  /**
+   * @brief Check if the Astarte device certificate is valid.
+   * @param certificate The Astarte device certificate.
+   * @param credential_secret The Astarte device credential necessary to authenticate to the broker.
+   * @param timeout_ms A timeout value to perform the HTTP request.
+   * @return true if the cerficate is valid, false otherwise.
+   */
+  auto device_cert_valid(std::string_view certificate, std::string_view credential_secret,
+                         int timeout_ms = 0) const -> bool;
+
   /** @brief The Astarte realm name. */
   const std::string realm;
   /** @brief The Astarte device id. */
