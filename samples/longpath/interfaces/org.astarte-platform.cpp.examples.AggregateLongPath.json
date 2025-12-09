@@ -1,0 +1,25 @@
+{
+  "interface_name": "org.astarte-platform.cpp.examples.AggregateLongPath",
+  "version_major": 0,
+  "version_minor": 1,
+  "type": "datastream",
+  "ownership": "server",
+  "aggregation": "object",
+  "mappings": [
+    {
+      "endpoint": "/request/%{objectPath}/string_endpoint",
+      "type": "string",
+      "database_retention_ttl": 86400
+    },
+    {
+      "endpoint": "/request/%{objectPath}/longinteger_endpoint",
+      "type": "longinteger",
+      "database_retention_ttl": 86400
+    },
+    {
+      "endpoint": "/request/%{objectPath}/boolean_endpoint",
+      "type": "boolean",
+      "database_retention_ttl": 86400
+    }
+  ]
+}

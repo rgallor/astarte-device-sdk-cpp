@@ -19,7 +19,7 @@ display_help() {
     cat << EOF
 Usage: $0 <sample_name> [OPTIONS]
 
-<sample_name> can be 'simple' or 'qt'.
+<sample_name> can be 'simple', 'qt' or 'longpath'.
 
 Common Options:
   --fresh         Build the sample from scratch (removes its build directory).
@@ -42,15 +42,15 @@ error_exit() {
 # --- Argument Parsing ---
 if [[ -z "$1" ]]; then
     display_help
-    error_exit "No sample specified. Please choose 'simple' or 'qt'."
+    error_exit "No sample specified. Please choose 'simple', 'qt' or 'longpath'."
 fi
 
 sample_to_build="$1"
 shift
 
-if [[ "$sample_to_build" != "simple" && "$sample_to_build" != "qt" ]]; then
+if [[ "$sample_to_build" != "simple" && "$sample_to_build" != "qt"  && "$sample_to_build" != "longpath" ]]; then
     display_help
-    error_exit "Invalid sample name: '$sample_to_build'. Must be 'simple' or 'qt'."
+    error_exit "Invalid sample name: '$sample_to_build'. Must be 'simple', 'qt' or 'longpath'."
 fi
 
 # Now parse the rest of the arguments
@@ -96,6 +96,10 @@ done
 case "$sample_to_build" in
     simple)
         sample_src_dir="samples/simple"
+        build_dir="${sample_src_dir}/build"
+        ;;
+	longpath)
+        sample_src_dir="samples/longpath"
         build_dir="${sample_src_dir}/build"
         ;;
     qt)
